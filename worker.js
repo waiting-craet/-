@@ -1,66 +1,21 @@
 /**
- * Cloudflare Worker for serving React SPA
+ * Cloudflare Worker for React SPA with Workers Sites
+ * Workers Sites automatically handles static files
  */
 
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
-});
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const path = url.pathname;
 
-async function handleRequest(request) {
-  const url = new URL(request.url);
-  const path = url.pathname;
-
-  // Handle API routes if any
-  if (path.startsWith('/api/')) {
-    return new Response('API not implemented', { status: 501 });
-  }
-
-  // For all other requests, serve the static files
-  // The files are uploaded with the worker build
-  try {
-    // Try to fetch the requested file from the worker's assets
-    const assetUrl = new URL(path, request.url);
-    const response = await fetch(assetUrl);
-
-    if (response.ok) {
-      // Add security headers
-      const headers = new Headers(response.headers);
-      headers.set('X-XSS-Protection', '1; mode=block');
-      headers.set('X-Content-Type-Options', 'nosniff');
-      headers.set('X-Frame-Options', 'DENY');
-      headers.set('Referrer-Policy', 'unsafe-url');
-      
-      return new Response(response.body, {
-        status: response.status,
-        headers: headers
-      });
+    // Workers Sites automatically serves files from the bucket
+    // We just need to handle API routes or custom logic
+    if (path.startsWith('/api/')) {
+      return new Response('API not implemented', { status: 501 });
     }
 
-    // If the file doesn't exist and it's not a static asset,
-    // serve index.html for SPA routing
-    if (!path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
-      const indexUrl = new URL('/index.html', request.url);
-      const indexResponse = await fetch(indexUrl);
-      
-      if (indexResponse.ok) {
-        const headers = new Headers(indexResponse.headers);
-        headers.set('X-XSS-Protection', '1; mode=block');
-        headers.set('X-Content-Type-Options', 'nosniff');
-        headers.set('X-Frame-Options', 'DENY');
-        headers.set('Referrer-Policy', 'unsafe-url');
-        
-        return new Response(indexResponse.body, {
-          status: 200,
-          headers: headers
-        });
-      }
-    }
-
-    // Return 404 for missing static assets
-    return new Response('Not Found', { status: 404 });
-
-  } catch (error) {
-    console.error('Error serving file:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    // Let Workers Sites handle the request
+    // It will serve index.html for non-existent files (SPA routing)
+    return env.ASSETS.fetch(request);
   }
-}
+};
