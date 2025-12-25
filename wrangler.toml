@@ -2,11 +2,12 @@ name = "christmas-tree"
 main = "worker.js"
 compatibility_date = "2023-12-01"
 
-[env.production]
-name = "christmas-tree-prod"
-routes = [
-  { pattern = "waiting-craet.pages.dev/*", zone_name = "waiting-craet.pages.dev" }
-]
+# 如果需要自定义域名，请取消注释并配置
+# [env.production]
+# name = "christmas-tree-prod"
+# routes = [
+#   { pattern = "your-domain.com/*", zone_name = "your-domain.com" }
+# ]
 
 [env.staging]
 name = "christmas-tree-staging"

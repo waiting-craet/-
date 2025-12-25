@@ -10,11 +10,16 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+          'mediapipe': ['@mediapipe/tasks-vision'],
+          'react-vendor': ['react', 'react-dom'],
+        },
       },
     },
     target: 'esnext',
     minify: 'esbuild',
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     port: 5173,
