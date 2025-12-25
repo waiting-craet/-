@@ -1,0 +1,20 @@
+name = "christmas-tree"
+main = "worker.js"
+compatibility_date = "2023-12-01"
+
+[env.production]
+name = "christmas-tree-prod"
+routes = [
+  { pattern = "waiting-craet.pages.dev/*", zone_name = "waiting-craet.pages.dev" }
+]
+
+[env.staging]
+name = "christmas-tree-staging"
+
+[build]
+command = "npm run build"
+upload = { format = "modules", dir = "dist" }
+
+[assets]
+directory = "./public"
+binding = "ASSETS"

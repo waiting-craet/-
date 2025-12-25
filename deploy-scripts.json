@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "build:worker": "npm run build && wrangler publish",
+    "deploy:staging": "npm run build && wrangler publish --env staging",
+    "deploy:production": "npm run build && wrangler publish --env production",
+    "preview": "vite preview",
+    "dev": "vite",
+    "lint": "eslint ."
+  }
+}
