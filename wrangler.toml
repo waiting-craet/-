@@ -16,6 +16,6 @@ name = "christmas-tree-staging"
 command = "npm run build"
 upload = { format = "modules", dir = "dist" }
 
-[assets]
-directory = "./public"
-binding = "ASSETS"
+# 静态资源配置 - 使用Workers Sites功能
+[site]
+bucket = "./public"

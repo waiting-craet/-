@@ -1,73 +1,66 @@
-import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler';
-
 /**
- * The DEBUG flag will do two things that help during development:
- * 1. we will skip caching on the edge, which makes it easier to
- *    debug.
- * 2. we will return an error message on exception in your Response rather
- *    than the default 404.html page.
+ * Cloudflare Worker for serving React SPA
  */
-const DEBUG = false;
 
 addEventListener('fetch', event => {
-  try {
-    event.respondWith(handleEvent(event));
-  } catch (e) {
-    if (DEBUG) {
-      return event.respondWith(
-        new Response(e.message || e.toString(), {
-          status: 500,
-        }),
-      );
-    }
-    event.respondWith(new Response('Internal Error', { status: 500 }));
-  }
+  event.respondWith(handleRequest(event.request));
 });
 
-async function handleEvent(event) {
-  const url = new URL(event.request.url);
-  let options = {};
+async function handleRequest(request) {
+  const url = new URL(request.url);
+  const path = url.pathname;
 
-  /**
-   * You can add custom logic to how we fetch your assets
-   * by configuring the function `mapRequestToAsset`
-   */
-  // options.mapRequestToAsset = handlePrefix(/^\/docs/);
+  // Handle API routes if any
+  if (path.startsWith('/api/')) {
+    return new Response('API not implemented', { status: 501 });
+  }
 
+  // For all other requests, serve the static files
+  // The files are uploaded with the worker build
   try {
-    if (DEBUG) {
-      // customize caching
-      options.cacheControl = {
-        bypassCache: true,
-      };
+    // Try to fetch the requested file from the worker's assets
+    const assetUrl = new URL(path, request.url);
+    const response = await fetch(assetUrl);
+
+    if (response.ok) {
+      // Add security headers
+      const headers = new Headers(response.headers);
+      headers.set('X-XSS-Protection', '1; mode=block');
+      headers.set('X-Content-Type-Options', 'nosniff');
+      headers.set('X-Frame-Options', 'DENY');
+      headers.set('Referrer-Policy', 'unsafe-url');
+      
+      return new Response(response.body, {
+        status: response.status,
+        headers: headers
+      });
     }
 
-    // Handle static assets
-    const page = await getAssetFromKV(event, options);
-
-    // allow headers to be altered
-    const response = new Response(page.body, page);
-
-    response.headers.set('X-XSS-Protection', '1; mode=block');
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('Referrer-Policy', 'unsafe-url');
-    response.headers.set('Feature-Policy', 'none');
-
-    return response;
-
-  } catch (e) {
-    // if an error is thrown try to serve the asset at 404.html
-    if (!DEBUG) {
-      try {
-        let notFoundResponse = await getAssetFromKV(event, {
-          mapRequestToAsset: req => new Request(`${new URL(req.url).origin}/404.html`, req),
+    // If the file doesn't exist and it's not a static asset,
+    // serve index.html for SPA routing
+    if (!path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+      const indexUrl = new URL('/index.html', request.url);
+      const indexResponse = await fetch(indexUrl);
+      
+      if (indexResponse.ok) {
+        const headers = new Headers(indexResponse.headers);
+        headers.set('X-XSS-Protection', '1; mode=block');
+        headers.set('X-Content-Type-Options', 'nosniff');
+        headers.set('X-Frame-Options', 'DENY');
+        headers.set('Referrer-Policy', 'unsafe-url');
+        
+        return new Response(indexResponse.body, {
+          status: 200,
+          headers: headers
         });
-
-        return new Response(notFoundResponse.body, { ...notFoundResponse, status: 404 });
-      } catch (e) {}
+      }
     }
 
-    return new Response(e.message || e.toString(), { status: 500 });
+    // Return 404 for missing static assets
+    return new Response('Not Found', { status: 404 });
+
+  } catch (error) {
+    console.error('Error serving file:', error);
+    return new Response('Internal Server Error', { status: 500 });
   }
 }
