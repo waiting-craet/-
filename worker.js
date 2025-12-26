@@ -14,12 +14,8 @@ export default {
       return new Response('API not implemented', { status: 501 });
     }
 
-    // Try to get the asset from Workers Sites
-    try {
-      return await env.ASSETS.fetch(request);
-    } catch (e) {
-      // If asset not found, return index.html for SPA routing
-      return await env.ASSETS.fetch(new Request('/index.html', request));
-    }
+    // Let Workers Sites handle the request
+    // It will serve index.html for non-existent files (SPA routing)
+    return env.ASSETS.fetch(request);
   }
 };
