@@ -1,4 +1,4 @@
-name = "christmas-tree"
+name = "for"
 main = "worker.js"
 compatibility_date = "2023-12-01"
 
