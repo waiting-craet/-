@@ -1,4 +1,4 @@
-# 圣诞树项目 - Cloudflare Workers 部署指南
+# 圣诞树项目 - Cloudflare Pages 部署指南
 
 ## 项目简介
 
@@ -18,7 +18,7 @@ npm run dev
 
 3. 在浏览器中访问 http://localhost:5173
 
-## 部署到 Cloudflare Workers
+## 部署到 Cloudflare Pages
 
 ### 前提条件
 
@@ -34,32 +34,34 @@ wrangler login
 
 ### 部署步骤
 
-1. 构建项目并部署到开发环境：
+1. 构建项目：
 ```bash
-npm run build:worker
+npm run build
 ```
 
-2. 部署到预发布环境：
+2. 部署到 Cloudflare Pages：
 ```bash
-npm run deploy:staging
+npm run deploy
 ```
 
-3. 部署到生产环境：
+或者直接使用 wrangler 命令：
 ```bash
-npm run deploy:production
+npx wrangler pages deploy dist --project-name=christmas-tree
 ```
 
 ### 配置说明
 
-- `wrangler.toml`: Cloudflare Workers配置文件
-- `worker.js`: Cloudflare Workers入口文件
-- `vite.config.ts`: Vite构建配置，已优化用于Workers部署
+- Cloudflare Pages 会自动处理静态资源
+- 所有文件从 `dist` 目录部署
+- 照片资源会自动上传并托管在 Cloudflare 的全球 CDN 上
+- 支持自定义域名（在 Cloudflare Pages 控制台配置）
 
 ### 注意事项
 
-1. 确保在`wrangler.toml`中正确配置了您的账户ID和路由
-2. 照片资源会自动通过Cloudflare的KV存储服务提供
-3. 首次部署可能需要几分钟时间才能在全球CDN上生效
+1. 首次部署时，Wrangler 会询问是否创建新项目，选择 "Yes"
+2. 确保项目名称与 `--project-name` 参数一致
+3. 部署完成后，Pages 会提供一个 `.pages.dev` 域名
+4. 可以在 Cloudflare Pages 控制台查看部署日志和配置自定义域名
 
 ## 项目结构
 
@@ -67,8 +69,7 @@ npm run deploy:production
 christmas-tree-main/
 ├── public/           # 静态资源，包括照片
 ├── src/              # React源代码
-├── worker.js         # Cloudflare Workers入口文件
-├── wrangler.toml     # Cloudflare Workers配置
+├── dist/             # 构建输出目录（自动生成）
 └── vite.config.ts    # Vite构建配置
 ```
 
@@ -89,4 +90,4 @@ christmas-tree-main/
 - MediaPipe
 - Vite
 - TypeScript
-- Cloudflare Workers
+- Cloudflare Pages

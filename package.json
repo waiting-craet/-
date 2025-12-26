@@ -6,9 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:worker": "npm run build && wrangler deploy",
-    "deploy:staging": "npm run build && wrangler deploy --env staging",
-    "deploy:production": "npm run build && wrangler deploy --env production",
+    "deploy": "npm run build && npx wrangler pages deploy dist --project-name=christmas-tree",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -24,7 +22,6 @@
     "uuid": "^11.0.3"
   },
   "devDependencies": {
-    "@cloudflare/kv-asset-handler": "^0.4.1",
     "@eslint/js": "^9.14.0",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
