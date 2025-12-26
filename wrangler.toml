@@ -14,5 +14,5 @@ name = "christmas-tree-staging"
 
 # 静态资源配置 - 使用Workers Sites功能
 # bucket 指向构建后的 dist 目录
-[site]
+[env.staging.site]
 bucket = "./dist"
