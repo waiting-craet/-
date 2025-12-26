@@ -12,10 +12,7 @@ compatibility_date = "2023-12-01"
 [env.staging]
 name = "christmas-tree-staging"
 
-[build]
-command = "npm run build"
-upload = { format = "modules", dir = "dist" }
-
 # 静态资源配置 - 使用Workers Sites功能
+# bucket 指向构建后的 dist 目录
 [site]
-bucket = "./public"
+bucket = "./dist"
